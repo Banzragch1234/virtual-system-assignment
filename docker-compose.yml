@@ -1,0 +1,45 @@
+services:
+  # 1. Database: PostgreSQL
+  db:
+    image: postgres:15
+    container_name: banzragch-db
+    restart: always
+    environment:
+      POSTGRES_USER: banzragch
+      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_DB: my_database
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  # 2. Backend Service
+  backend:
+    build: ./backend
+    container_name: banzragch-backend
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgres://banzragch:secretpassword@db:5432/my_database
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  # 3. Frontend Service
+  frontend:
+    build: ./frontend
+    container_name: banzragch-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db-data:
